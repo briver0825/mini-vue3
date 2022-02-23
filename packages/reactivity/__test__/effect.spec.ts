@@ -1,8 +1,9 @@
-import { reactive, effect, stop } from "../src"
+import { reactive } from "../src/reactive"
+import { effect, stop } from "../src/effect"
 
 describe("reactivity/effect", () => {
   it("should observe basic properties", () => {
-    const counter = reactive({ num: 1 })
+    const counter: any = reactive({ num: 1 })
     let dummy
 
     effect(function () {
@@ -34,7 +35,7 @@ describe("reactivity/effect", () => {
     const scheduler = jest.fn(() => {
       run = runner
     })
-    const obj = reactive({ foo: 1 })
+    const obj: any = reactive({ foo: 1 })
     const runner = effect(
       () => {
         dummy = obj.foo
@@ -56,14 +57,15 @@ describe("reactivity/effect", () => {
 
   it("stop", () => {
     let dummy
-    const obj = reactive({ prop: 1 })
+    let a
+    const obj: any = reactive({ prop: 1, a: 1 })
     const runner = effect(() => {
       dummy = obj.prop
     })
     obj.prop = 2
     expect(dummy).toBe(2)
     stop(runner)
-    obj.prop = 3
+    obj.prop++
     expect(dummy).toBe(2)
 
     // stopped effect should still be manually callable

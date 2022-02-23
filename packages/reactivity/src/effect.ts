@@ -1,7 +1,6 @@
 import { extend } from "../../shared"
-import { createGetter } from "./baseHandlers"
 
-let activeEffect: ReactiveEffect | undefined | null
+export let activeEffect: any
 const targetMap = new WeakMap()
 
 export function track(target: Object, key: string) {
@@ -21,9 +20,12 @@ export function track(target: Object, key: string) {
     depsMap.set(key, dep)
   }
 
+  trackEffects(dep)
+}
+
+export function trackEffects(dep: any) {
   dep.add(activeEffect)
   activeEffect.deps.push(dep)
-  activeEffect = null
 }
 
 export function trigger(target: Object, key: string) {
@@ -36,7 +38,10 @@ export function trigger(target: Object, key: string) {
   if (!dep) {
     return
   }
+  triggerEffects(dep)
+}
 
+export function triggerEffects(dep: any) {
   dep.forEach((effect) => {
     if (effect.scheduler) {
       effect.scheduler()
@@ -67,18 +72,22 @@ export class ReactiveEffect {
   }
 }
 
-function cleanupEffect(effect) {
+export function cleanupEffect(effect) {
   effect.deps.forEach((dep: any) => {
     dep.delete(effect)
   })
+  effect.deps.length = 0
 }
 
-export function effect(fn: Function, options: any = {}) {
-  const _effect = new ReactiveEffect(fn, options.scheduler)
+export function effect(fn: Function, options?) {
+  const _effect = new ReactiveEffect(fn)
 
-  extend(_effect, options)
+  if (options) {
+    extend(_effect, options)
+  }
 
   _effect.run()
+  activeEffect = null
   const runner: any = _effect.run.bind(_effect)
   runner.effect = _effect
   return runner
