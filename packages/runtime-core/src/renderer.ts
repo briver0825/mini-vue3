@@ -12,7 +12,6 @@ function patch(vnode, container) {
   if (shapeFlag & ShapeFlags.STATEFUL_COMPONENT) {
     // vnode 是一个component
     // h(App,{},[])
-
     processComponent(vnode, container)
   } else if (shapeFlag & ShapeFlags.ELEMENT) {
     // vnode 是一个element
@@ -24,6 +23,7 @@ function patch(vnode, container) {
     container.textContent = vnode
   }
 }
+
 function processElement(vnode, container) {
   mountElement(vnode, container)
 }
@@ -31,19 +31,31 @@ function processElement(vnode, container) {
 function mountElement(vnode, container) {
   const { type, children, props, shapeFlag } = vnode
   const el = (vnode.el = document.createElement(type))
+
   //children
   if (shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
     mountChildren(children, el)
   } else if (shapeFlag & ShapeFlags.TEXT_CHILDREN) {
     el.textContent = children
   }
+
   // props
   for (const key in props) {
     const value = props[key]
-    el.setAttribute(key, value)
+
+    const isOn = (key: string) => /^on[A-Z]*/.test(key)
+    // event
+    if (isOn(key)) {
+      const event = key.slice(2).toLocaleLowerCase()
+      el.addEventListener(event, value)
+    } else {
+      // attribute
+      el.setAttribute(key, value)
+    }
   }
   container.append(el)
 }
+
 function mountChildren(children, container) {
   children.forEach((child) => {
     patch(child, container)

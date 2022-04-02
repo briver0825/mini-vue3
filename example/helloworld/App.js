@@ -3,7 +3,19 @@ import { h } from "../../lib/guide-mini-vue3.esm.js"
 const App = {
   render() {
     return h("div", { id: "aaaaa" }, [
-      h("h1", { class: "red" }, "Hello Vue3!!!"),
+      h(
+        "h1",
+        {
+          id: "red",
+          onClick() {
+            console.log("click")
+          },
+          onMouseDown() {
+            console.log("mousedown")
+          },
+        },
+        "Hello Vue3!!!"
+      ),
       h("h2", {}, "h2"),
     ])
   },
