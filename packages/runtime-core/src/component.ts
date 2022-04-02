@@ -26,8 +26,10 @@ function setupStatefulComponent(instance) {
 
 function handleSetupResult(instance, setupResult) {
   if (typeof setupResult === "object") {
+    // 如果是object那么返回的就是context
     instance.setupState = setupResult
   } else if (typeof setupResult === "function") {
+    // 如果是function那么返回的是render函数
   }
   finishCompoentSetup(instance)
 }

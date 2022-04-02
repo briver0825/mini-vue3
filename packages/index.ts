@@ -1,2 +1,2 @@
-// export * from "./reactivity/src"
+export * from "./reactivity/src"
 export * from "./runtime-core/src"

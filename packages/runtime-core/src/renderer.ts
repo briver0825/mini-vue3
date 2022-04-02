@@ -7,16 +7,19 @@ export function render(vnode, rootContainer) {
 
 function patch(vnode, container) {
   if (isObject(vnode.type)) {
-    // component
+    // vnode 是一个component
+    // h(App,{},[])
     processComponent(vnode, container)
   } else if (typeof vnode.type === "string") {
-    // element
+    // vnode 是一个element
+    // h('div',{class:'red'},null)
     processElement(vnode, container)
-  } else if (typeof vnode === "string") {
+  } else if (vnode) {
+    // vnode 不是component 和 element 那就可能是一个文本节点
+    // h('div',{},[h('p',{},null),'222',this.msg])
     container.textContent = vnode
   }
 }
-
 function processElement(vnode, container) {
   mountElement(vnode, container)
 }
@@ -37,7 +40,6 @@ function mountElement(vnode, container) {
   }
   container.append(el)
 }
-
 function mountChildren(children, container) {
   children.forEach((child) => {
     patch(child, container)

@@ -1,4 +1,4 @@
-import { reactive, isReactive, shallowReactive, isProxy } from "../src"
+import { isReactive, shallowReactive, isProxy, reactive } from "../src"
 
 describe("reactivity/reactive", () => {
   test("Object", () => {

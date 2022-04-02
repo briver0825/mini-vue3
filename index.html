@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <div id="app"></div>
+  </body>
+  <script>
+    function createApp(rootComponent) {
+      return {
+        mount(rootContainer) {
+          render(rootComponent, rootContainer)
+        },
+      }
+    }
+    function render(rootComponent, rootContainer) {
+      patch(rootComponent, rootContainer)
+    }
+    function patch(vnode, container) {
+      const { type, props, children } = vnode
+      if (typeof type === "string") {
+        //   element
+        const el = document.createElement(type)
+        //   props
+        if (typeof props === "object") {
+          for (const key in props) {
+            el.setAttribute(key, props[key])
+          }
+        }
+        // children
+        if (Array.isArray(children)) {
+          children.forEach((child) => {
+            patch(child, el)
+          })
+        } else {
+          patch(children, el)
+        }
+        container.appendChild(el)
+      } else if (typeof vnode === "object") {
+        //   component
+        const { setup, render } = vnode
+        const componentInstance = {
+          vnode: null,
+        }
+        // initSetupState
+        const setupResult = setup()
+        if (typeof setupResult === "object") {
+          componentInstance.setupState = setupResult
+        } else if (typeof setupResult === "function") {
+          // render函数
+          componentInstance.render = setupResult
+        }
+        // 处理render
+        if (componentInstance.render) {
+          componentInstance.vnode = componentInstance.render()
+        } else {
+          componentInstance.vnode = render.call(componentInstance.setupState)
+        }
+        patch(componentInstance.vnode, container)
+      } else if (typeof vnode === "string") {
+        //   children is only one
+        container.textContent = vnode
+      }
+    }
+    function h(type, props, children) {
+      return {
+        type,
+        props,
+        children,
+      }
+    }
+
+    const targetStack = new WeakMap()
+    let activeEffct = () => {
+      console.log("effect")
+    }
+    function reactive(raw) {
+      return new Proxy(raw, {
+        get(target, key) {
+          const result = Reflect.get(target, key)
+          track(target, key)
+          return result
+        },
+        set(target, key, value) {
+          const result = Reflect.set(target, key, value)
+          trigger(target, key)
+          return result
+        },
+      })
+    }
+
+    function track(target, key) {
+      if (!activeEffct) return
+      let depMap = targetStack.get(target)
+      if (!depMap) {
+        depMap = new Map()
+        targetStack.set(target, depMap)
+      }
+      let dep = depMap.get(key)
+      if (!dep) {
+        dep = new Set()
+        depMap.set(key, dep)
+      }
+      dep.add(activeEffct)
+    }
+    function trigger(target, key) {
+      let depMap = targetStack.get(target)
+      if (!depMap) return
+      let dep = depMap.get(key)
+      if (!dep) return
+      dep.forEach((effect) => {
+        effect()
+      })
+    }
+
+    function effect(fn) {
+      activeEffct = fn
+      fn()
+      activeEffct = null
+    }
+
+    const user = reactive({
+      name: "张三",
+    })
+
+    effect(() => {
+      console.log("username", user.name)
+    })
+
+    const App = {
+      //   setup() {
+      //     return {
+      //       msg: "一条消息",
+      //     }
+      //   },
+      setup() {
+        const msg = "hello Setup!!!"
+        return () => {
+          return h("div", { class: "setupRender" }, msg)
+        }
+      },
+      render() {
+        // return h("div", {}, this.msg)
+        return h("div", {}, ["Hello Vue3！！！", h("p", {}, this.msg)])
+      },
+    }
+
+    createApp(App).mount(document.querySelector("#app"))
+  </script>
+</html>
