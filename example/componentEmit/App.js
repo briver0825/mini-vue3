@@ -1,38 +1,34 @@
-import { h } from "../../lib/guide-mini-vue3.esm.js"
+import { h, renderSlots } from "../../lib/guide-mini-vue3.esm.js"
 
-const Title = {
-  setup(props) {
-    props.count++
+const Foo = {
+  setup(props, { emit }) {
+    return {
+      emitAdd() {
+        emit("add")
+      },
+    }
   },
   render() {
-    return h("div", {}, this.count)
+    const btn = h("button", { onClick: this.emitAdd }, "emitAdd")
+    const foo = h("div", {}, "foo")
+    return h("div", {}, [foo, btn])
   },
 }
 
+const app = h("div", {}, [
+  h(Foo, {
+    onAdd() {
+      console.log("onAdd")
+    },
+  }),
+])
+
 const App = {
   render() {
-    return h("div", { id: "aaaaa" }, [
-      h(
-        "h1",
-        {
-          id: "red",
-          onClick() {
-            console.log("click")
-          },
-          onMouseDown() {
-            console.log("mousedown")
-          },
-        },
-        "Hello Vue3!!!"
-      ),
-      h("h2", {}, this.msg),
-      h(Title, { count: 1 }),
-    ])
+    return app
   },
   setup() {
-    return {
-      msg: "hello mini-vue3!!!",
-    }
+    return {}
   },
 }
 
