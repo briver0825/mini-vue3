@@ -23,7 +23,7 @@ function getShapeFlag(type, children) {
   // 处理 children 的flag
   if (Array.isArray(children)) {
     flag |= ShapeFlags.ARRAY_CHILDREN
-  } else if (typeof children === "string") {
+  } else {
     flag |= ShapeFlags.TEXT_CHILDREN
   }
 

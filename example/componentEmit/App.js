@@ -16,6 +16,12 @@ const App = {
         "h1",
         {
           id: "red",
+          onClick() {
+            console.log("click")
+          },
+          onMouseDown() {
+            console.log("mousedown")
+          },
         },
         "Hello Vue3!!!"
       ),
