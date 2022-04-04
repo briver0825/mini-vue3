@@ -1,4 +1,8 @@
-import { h, renderSlots } from "../../lib/guide-mini-vue3.esm.js"
+import {
+  h,
+  renderSlots,
+  createTextVnode,
+} from "../../lib/guide-mini-vue3.esm.js"
 
 const Foo = {
   setup(props) {},
@@ -17,7 +21,11 @@ const foo = h(
   {},
   {
     header: ({ a }) => h("p", {}, "header slot" + a),
-    footer: () => h("p", {}, "footer slot"),
+    footer: () => [
+      h("p", {}, "footer slot"),
+      h("p", {}, "footer slot"),
+      createTextVnode("hello"),
+    ],
   }
 )
 

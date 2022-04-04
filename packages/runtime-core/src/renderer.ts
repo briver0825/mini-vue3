@@ -1,27 +1,47 @@
 import { isObject } from "../../shared/index"
 import { ShapeFlags } from "../../shared/shapeFlags"
 import { createComponentInstance, setupComponent } from "./component"
+import { Fragment, Text } from "./vnode"
 
 export function render(vnode, rootContainer) {
   patch(vnode, rootContainer)
 }
 
 function patch(vnode, container) {
-  const { shapeFlag } = vnode
+  const { type, shapeFlag } = vnode
+  switch (type) {
+    case Fragment:
+      processFragment(vnode, container)
+      break
+    case Text:
+      processText(vnode, container)
+      break
 
-  if (shapeFlag & ShapeFlags.STATEFUL_COMPONENT) {
-    // vnode 是一个component
-    // h(App,{},[])
-    processComponent(vnode, container)
-  } else if (shapeFlag & ShapeFlags.ELEMENT) {
-    // vnode 是一个element
-    // h('div',{class:'red'},null)
-    processElement(vnode, container)
-  } else if (vnode) {
-    // vnode 不是component 和 element 那就可能是一个文本节点
-    // h('div',{},[h('p',{},null),'222',this.msg])
-    container.textContent = vnode
+    default:
+      if (shapeFlag & ShapeFlags.STATEFUL_COMPONENT) {
+        // vnode 是一个component
+        // h(App,{},[])
+        processComponent(vnode, container)
+      } else if (shapeFlag & ShapeFlags.ELEMENT) {
+        // vnode 是一个element
+        // h('div',{class:'red'},null)
+        processElement(vnode, container)
+      } else if (vnode) {
+        // vnode 不是component 和 element 那就可能是一个文本节点
+        // h('div',{},[h('p',{},null),'222',this.msg])
+        container.textContent = vnode
+      }
   }
+}
+
+function processText(vnode, container) {
+  const { children } = vnode
+  const textNode = (vnode.el = document.createTextNode(children))
+  container.appendChild(textNode)
+}
+
+function processFragment(vnode, container) {
+  mountChildren(vnode.children, container)
 }
 
 function processElement(vnode, container) {
