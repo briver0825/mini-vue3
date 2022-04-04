@@ -29,7 +29,8 @@ function patch(vnode, container) {
       } else if (vnode) {
         // vnode 不是component 和 element 那就可能是一个文本节点
         // h('div',{},[h('p',{},null),'222',this.msg])
-        container.textContent = vnode
+        const TextNode = document.createTextNode(vnode)
+        container.appendChild(TextNode)
       }
   }
 }
