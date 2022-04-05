@@ -1,4 +1,3 @@
-export { createApp } from "./createApp"
 export { h } from "./h"
 export { createTextVnode } from "./vnode"
 export { getCurrentInstance } from "./component"
