@@ -1,3 +1,4 @@
+import { effect } from "../../reactivity/src"
 import { createApp } from "../../runtime-dom"
 import { isObject } from "../../shared/index"
 import { ShapeFlags } from "../../shared/shapeFlags"
@@ -8,49 +9,56 @@ import { Fragment, Text } from "./vnode"
 export function createRender(options) {
   const { createTextNode, insert, createElement, patchProps } = options
   function render(vnode, rootContainer) {
-    patch(vnode, rootContainer, null)
+    patch(null, vnode, rootContainer, null)
   }
 
-  function patch(vnode, container, parentComponent) {
-    const { type, shapeFlag } = vnode
+  function patch(n1, n2, container, parentComponent) {
+    const { type, shapeFlag } = n2
     switch (type) {
       case Fragment:
-        processFragment(vnode, container)
+        processFragment(n1, n2, container)
         break
       case Text:
-        processText(vnode, container)
+        processText(n1, n2, container)
         break
 
       default:
         if (shapeFlag & ShapeFlags.STATEFUL_COMPONENT) {
           // vnode 是一个component
           // h(App,{},[])
-          processComponent(vnode, container, parentComponent)
+          processComponent(n1, n2, container, parentComponent)
         } else if (shapeFlag & ShapeFlags.ELEMENT) {
           // vnode 是一个element
           // h('div',{class:'red'},null)
-          processElement(vnode, container, parentComponent)
-        } else if (vnode) {
+          processElement(n1, n2, container, parentComponent)
+        } else {
           // vnode 不是component 和 element 那就可能是一个文本节点
           // h('div',{},[h('p',{},null),'222',this.msg])
-
-          insert(createTextNode(vnode), container)
+          insert(createTextNode(n2), container)
         }
     }
   }
 
-  function processText(vnode, container) {
-    const { children } = vnode
-    const textNode = (vnode.el = createTextNode(children))
+  function processText(n1, n2, container) {
+    const { children } = n2
+    const textNode = (n2.el = createTextNode(children))
     insert(textNode, container)
   }
 
-  function processFragment(vnode, container) {
-    mountChildren(vnode.children, container, null)
+  function processFragment(n1, n2, container) {
+    mountChildren(n2.children, container, null)
   }
 
-  function processElement(vnode, container, parentComponent) {
-    mountElement(vnode, container, parentComponent)
+  function processElement(n1, n2, container, parentComponent) {
+    if (!n1) {
+      mountElement(n2, container, parentComponent)
+    } else {
+      patchElement(n1, n2, container)
+    }
+  }
+
+  function patchElement(n1, n2, container) {
+    console.log(n1, n2)
   }
 
   function mountElement(vnode, container, parentComponent) {
@@ -71,12 +79,12 @@ export function createRender(options) {
 
   function mountChildren(children, container, parentComponent) {
     children.forEach((child) => {
-      patch(child, container, parentComponent)
+      patch(null, child, container, parentComponent)
     })
   }
 
-  function processComponent(vnode, container, parentComponent) {
-    mountComponent(vnode, container, parentComponent)
+  function processComponent(n1, n2, container, parentComponent) {
+    mountComponent(n2, container, parentComponent)
   }
 
   function mountComponent(initinalVNode, container, parentComponent) {
@@ -86,10 +94,22 @@ export function createRender(options) {
   }
 
   function setupRenderEffect(instance, container) {
-    const { proxy } = instance
-    const subTree = instance.render.call(proxy)
-    patch(subTree, container, instance)
-    instance.vnode.el = subTree.el
+    effect(() => {
+      const { proxy } = instance
+      if (!instance.isMounted) {
+        console.log("init")
+        const subTree = (instance.subTree = instance.render.call(proxy))
+        patch(null, subTree, container, instance)
+        instance.vnode.el = subTree.el
+        instance.isMounted = true
+      } else {
+        console.log("update")
+        const subTree = instance.render.call(proxy)
+        const preSubTree = instance.subTree
+        patch(preSubTree, subTree, container, instance)
+        instance.vnode.el = subTree.el
+      }
+    })
   }
 
   return {
