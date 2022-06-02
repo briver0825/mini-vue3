@@ -6,7 +6,13 @@ import { createAppApi } from "./createApp"
 import { Fragment, Text } from "./vnode"
 
 export function createRender(options) {
-  const { createTextNode, insert, createElement, hostPatchProps } = options
+  const {
+    createTextNode,
+    insert,
+    createElement,
+    hostPatchProps,
+    setElementInnerContext,
+  } = options
   function render(vnode, rootContainer) {
     patch(null, vnode, rootContainer, null)
   }
@@ -21,7 +27,6 @@ export function createRender(options) {
       case Text:
         processText(n1, n2, container)
         break
-
       default:
         if (shapeFlag & ShapeFlags.STATEFUL_COMPONENT) {
           // vnode 是一个component
@@ -95,8 +100,11 @@ export function createRender(options) {
     //children
     if (shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
       mountChildren(children, el, parentComponent)
-    } else if (shapeFlag & ShapeFlags.TEXT_CHILDREN) {
-      insert(createTextNode(children), el)
+    } else if (!!(children.shapeFlag & ShapeFlags.TEXT_CHILDREN)) {
+      const vlaue = children.children
+      insert(createTextNode(vlaue), el)
+    } else {
+      setElementInnerContext(el, children)
     }
 
     // props

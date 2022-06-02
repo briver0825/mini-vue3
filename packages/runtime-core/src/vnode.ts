@@ -23,6 +23,8 @@ function getShapeFlag(type, children) {
   // 处理 element 和 component 的flag
   if (typeof type === "string") {
     flag |= ShapeFlags.ELEMENT
+  } else if (type === Text) {
+    flag |= ShapeFlags.TEXT_CHILDREN
   } else {
     flag |= ShapeFlags.STATEFUL_COMPONENT
   }
@@ -30,8 +32,6 @@ function getShapeFlag(type, children) {
   // 处理 children 的flag
   if (Array.isArray(children)) {
     flag |= ShapeFlags.ARRAY_CHILDREN
-  } else {
-    flag |= ShapeFlags.TEXT_CHILDREN
   }
 
   return flag

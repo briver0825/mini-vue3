@@ -1,8 +1,10 @@
-import { h, ref } from "../../lib/guide-mini-vue3.esm.js"
+import { createTextVnode, h, ref } from "../../lib/guide-mini-vue3.esm.js"
 
 const App = {
   render() {
     return h("div", { ...this.props }, [
+      h("h1", {}, createTextVnode(this.count)),
+      h("button", { onClick: this.changePropsDemo }, "add Count"),
       h("button", { onClick: this.changePropsDemo1 }, "修改props"),
       h(
         "button",
@@ -22,6 +24,12 @@ const App = {
       bar: "bar",
     })
 
+    const count = ref(0)
+
+    const changePropsDemo = () => {
+      count.value++
+    }
+
     // 修改props
     const changePropsDemo1 = () => {
       props.value.foo = "new-foo"
@@ -40,7 +48,9 @@ const App = {
     }
 
     return {
+      count,
       props,
+      changePropsDemo,
       changePropsDemo1,
       changePropsDemo2,
       changePropsDemo3,

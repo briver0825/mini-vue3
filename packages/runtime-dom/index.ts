@@ -26,11 +26,16 @@ function patchProps(el, key, prevVal, nextVal) {
   }
 }
 
+function setElementInnerContext(el, context) {
+  el.textContent = context
+}
+
 const renderer = createRender({
   createTextNode,
   insert,
   createElement,
   hostPatchProps: patchProps,
+  setElementInnerContext,
 })
 
 export function createApp(rootComponent) {
