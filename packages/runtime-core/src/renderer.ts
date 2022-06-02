@@ -1,19 +1,19 @@
 import { effect } from "../../reactivity/src"
-import { createApp } from "../../runtime-dom"
-import { isObject } from "../../shared/index"
+import { EMPTY_OBJ } from "../../shared"
 import { ShapeFlags } from "../../shared/shapeFlags"
 import { createComponentInstance, setupComponent } from "./component"
 import { createAppApi } from "./createApp"
 import { Fragment, Text } from "./vnode"
 
 export function createRender(options) {
-  const { createTextNode, insert, createElement, patchProps } = options
+  const { createTextNode, insert, createElement, hostPatchProps } = options
   function render(vnode, rootContainer) {
     patch(null, vnode, rootContainer, null)
   }
 
   function patch(n1, n2, container, parentComponent) {
     const { type, shapeFlag } = n2
+
     switch (type) {
       case Fragment:
         processFragment(n1, n2, container)
@@ -58,7 +58,33 @@ export function createRender(options) {
   }
 
   function patchElement(n1, n2, container) {
-    console.log(n1, n2)
+    const oldProps = n1.props || EMPTY_OBJ
+    const newProps = n2.props || EMPTY_OBJ
+
+    const el = (n2.el = n1.el)
+
+    patchProps(el, oldProps, newProps)
+  }
+
+  function patchProps(el, oldProps, newProps) {
+    if (oldProps !== newProps) {
+      for (const key in newProps) {
+        const prevProp = oldProps[key]
+        const nextProp = newProps[key]
+
+        if (prevProp !== nextProp) {
+          hostPatchProps(el, key, prevProp, nextProp)
+        }
+      }
+
+      if (oldProps !== EMPTY_OBJ) {
+        for (const key in oldProps) {
+          if (!(key in newProps)) {
+            hostPatchProps(el, key, oldProps[key], null)
+          }
+        }
+      }
+    }
   }
 
   function mountElement(vnode, container, parentComponent) {
@@ -73,7 +99,11 @@ export function createRender(options) {
     }
 
     // props
-    patchProps(props, el)
+    for (const key in props) {
+      const val = props[key]
+      hostPatchProps(el, key, null, val)
+    }
+
     insert(el, container)
   }
 
@@ -106,8 +136,8 @@ export function createRender(options) {
         console.log("update")
         const subTree = instance.render.call(proxy)
         const preSubTree = instance.subTree
-        patch(preSubTree, subTree, container, instance)
         instance.vnode.el = subTree.el
+        patch(preSubTree, subTree, container, instance)
       }
     })
   }

@@ -10,18 +10,18 @@ function insert(child, container) {
 function createElement(type) {
   return document.createElement(type)
 }
-function patchProps(props, el) {
-  for (const key in props) {
-    const value = props[key]
-
-    const isOn = (key: string) => /^on[A-Z]*/.test(key)
-    // event
-    if (isOn(key)) {
-      const event = key.slice(2).toLocaleLowerCase()
-      el.addEventListener(event, value)
+function patchProps(el, key, prevVal, nextVal) {
+  const isOn = (key: string) => /^on[A-Z]*/.test(key)
+  // event
+  if (isOn(key)) {
+    const event = key.slice(2).toLocaleLowerCase()
+    el.addEventListener(event, nextVal)
+  } else {
+    // attribute
+    if (nextVal === undefined || nextVal === null) {
+      el.removeAttribute(key)
     } else {
-      // attribute
-      el.setAttribute(key, value)
+      el.setAttribute(key, nextVal)
     }
   }
 }
@@ -30,7 +30,7 @@ const renderer = createRender({
   createTextNode,
   insert,
   createElement,
-  patchProps,
+  hostPatchProps: patchProps,
 })
 
 export function createApp(rootComponent) {
