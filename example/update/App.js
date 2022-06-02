@@ -3,8 +3,6 @@ import { h, ref } from "../../lib/guide-mini-vue3.esm.js"
 const App = {
   render() {
     return h("div", { ...this.props }, [
-      h("h1", {}, this.count),
-      h("button", { onClick: this.addCount }, "点我"),
       h("button", { onClick: this.changePropsDemo1 }, "修改props"),
       h(
         "button",
@@ -19,12 +17,6 @@ const App = {
     ])
   },
   setup() {
-    const count = ref(0)
-
-    const addCount = () => {
-      count.value++
-    }
-
     const props = ref({
       foo: "foo",
       bar: "bar",
@@ -48,8 +40,6 @@ const App = {
     }
 
     return {
-      count,
-      addCount,
       props,
       changePropsDemo1,
       changePropsDemo2,

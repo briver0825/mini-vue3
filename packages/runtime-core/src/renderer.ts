@@ -53,16 +53,17 @@ export function createRender(options) {
     if (!n1) {
       mountElement(n2, container, parentComponent)
     } else {
-      patchElement(n1, n2, container)
+      updateElement(n1, n2, container)
     }
   }
 
-  function patchElement(n1, n2, container) {
+  function updateElement(n1, n2, container) {
     const oldProps = n1.props || EMPTY_OBJ
     const newProps = n2.props || EMPTY_OBJ
 
     const el = (n2.el = n1.el)
 
+    // 对比props
     patchProps(el, oldProps, newProps)
   }
 
