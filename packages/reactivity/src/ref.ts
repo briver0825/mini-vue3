@@ -45,7 +45,7 @@ export function unRef(ref) {
   return isRef(ref) ? ref.value : ref
 }
 
-export function proxyRefs(objectwithRefs) {
+export function proxyRefs(objectwithRefs = {}) {
   return new Proxy(objectwithRefs, {
     get(target, key) {
       return unRef(Reflect.get(target, key))

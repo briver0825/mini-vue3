@@ -30,12 +30,17 @@ function setElementInnerContext(el, context) {
   el.textContent = context
 }
 
+function removeAllChildren(el) {
+  el.innerHTML = ""
+}
+
 const renderer = createRender({
   createTextNode,
   insert,
   createElement,
   hostPatchProps: patchProps,
   setElementInnerContext,
+  removeAllChildren,
 })
 
 export function createApp(rootComponent) {

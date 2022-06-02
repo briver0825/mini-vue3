@@ -12,6 +12,7 @@ export function createRender(options) {
     createElement,
     hostPatchProps,
     setElementInnerContext,
+    removeAllChildren,
   } = options
   function render(vnode, rootContainer) {
     patch(null, vnode, rootContainer, null)
@@ -70,6 +71,34 @@ export function createRender(options) {
 
     // 对比props
     patchProps(el, oldProps, newProps)
+
+    // 对比children
+    patchChildren(n1, n2, el)
+  }
+
+  function patchChildren(n1, n2, container) {
+    // n1 children 是文本节点
+    if (!!(n1.shapeFlag & ShapeFlags.TEXT_CHILDREN)) {
+      if (!!(n2.shapeFlag & ShapeFlags.ARRAY_CHILDREN)) {
+        // text children  => array children
+        removeAllChildren(container)
+        mountChildren(n2.children, container, null)
+      } else {
+        // text children  => text children
+        if (n1.children !== n2.children) {
+          setElementInnerContext(container, n2.children)
+        }
+      }
+    } else {
+      // n1 children 是一个数组
+      if (!!(n2.shapeFlag & ShapeFlags.ARRAY_CHILDREN)) {
+        // array children  => array children
+      } else {
+        // array children  => text children
+        removeAllChildren(container)
+        setElementInnerContext(container, n2.children)
+      }
+    }
   }
 
   function patchProps(el, oldProps, newProps) {

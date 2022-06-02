@@ -15,7 +15,7 @@ export function createVNode(type, props?, children?) {
 }
 
 export function createTextVnode(text) {
-  return createVNode(Text, {}, text)
+  return createVNode(Text, {}, String(text))
 }
 
 function getShapeFlag(type, children) {
@@ -32,6 +32,8 @@ function getShapeFlag(type, children) {
   // 处理 children 的flag
   if (Array.isArray(children)) {
     flag |= ShapeFlags.ARRAY_CHILDREN
+  } else if (typeof children === "string") {
+    flag |= ShapeFlags.TEXT_CHILDREN
   }
 
   return flag
